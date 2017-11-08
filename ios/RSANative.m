@@ -138,9 +138,42 @@ typedef void (^SecKeyPerformBlock)(SecKeyRef key);
 }
 
 - (NSString *)encrypt:(NSString *)message {
-    NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
-    NSData *encrypted = [self _encrypt: data];
-    return [encrypted base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+    //NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
+    //NSData *encrypted = [self _encrypt: data];
+    //return [encrypted base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+    // 分配内存块，用于存放加密后的数据段
+    size_t cipherBufferSize = SecKeyGetBlockSize(_publicKeyRef);
+    uint8_t *cipherBuffer = malloc(cipherBufferSize * sizeof(uint8_t));
+    NSData *stringBytes = [message dataUsingEncoding:NSUTF8StringEncoding];
+    size_t blockSize = cipherBufferSize - 12;
+    size_t blockCount = (size_t)ceil([stringBytes length] / (double)blockSize);
+
+     NSMutableData *encryptedData = [NSMutableData data];
+
+    // 分段加密
+    for (int i =0; i<blockCount; i++) {
+        NSUInteger loc = i * blockSize;
+        // 数据段的实际大小。最后一段可能比blockSize小。
+        int bufferSize = MIN(blockSize,[stringBytes length] - loc);
+        // 截取需要加密的数据段
+        NSData *buffer = [stringBytes subdataWithRange:NSMakeRange(loc, bufferSize)];
+        OSStatus status = SecKeyEncrypt(_publicKeyRef, kSecPaddingPKCS1, (const uint8_t *)[buffer bytes], [buffer length], cipherBuffer, &cipherBufferSize);
+
+        if (status == noErr) {
+            NSData *encryptedBytes = [[NSData alloc] initWithBytes:(const void *)cipherBuffer length:cipherBufferSize];
+            // 追加加密后的数据段
+            [encryptedData appendData:encryptedBytes];
+        } else {
+            if (cipherBuffer) {
+                free(cipherBuffer);
+            }
+            return nil;
+        }
+    }
+    if (cipherBuffer) {
+        free(cipherBuffer);
+    }
+    return [encryptedData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
 }
 
 - (NSData *)_encrypt:(NSData *)data {
