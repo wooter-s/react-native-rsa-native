@@ -111,9 +111,26 @@ public class RSA {
 
     // Base64 input
     public String encrypt64(String b64Message) throws NoSuchAlgorithmException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
-        byte[] data = Base64.decode(b64Message, Base64.DEFAULT);
-        byte[] cipherBytes = encrypt(data);
-        return Base64.encodeToString(cipherBytes, Base64.DEFAULT);
+        //byte[] data = Base64.decode(b64Message, Base64.DEFAULT);
+        //byte[] cipherBytes = encrypt(data);
+        //return Base64.encodeToString(cipherBytes, Base64.DEFAULT);
+        try{
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING");
+            cipher.init(Cipher.ENCRYPT_MODE, this.publicKey);
+            byte[] data = message.getBytes(UTF_8);
+            int blocks = data.length / 117;
+            int lastBlockSize = data.length % 117;
+            byte[] encryptedData = new byte[(lastBlockSize == 0?blocks:blocks + 1) * 128];
+            for(int i = 0; i < blocks; ++i) {
+                cipher.doFinal(data, i * 117, 117, encryptedData, i * 128);
+            }
+            if(lastBlockSize != 0) {
+                cipher.doFinal(data, blocks * 117, lastBlockSize, encryptedData, blocks * 128);
+            }
+            return Base64.encodeToString(encryptedData, Base64.DEFAULT);
+        } catch (Exception var1){
+            throw new RuntimeException("RSA加密异常", var1);
+        }
     }
 
     // UTF-8 input
