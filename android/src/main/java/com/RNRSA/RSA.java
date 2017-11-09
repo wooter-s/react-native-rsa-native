@@ -117,7 +117,7 @@ public class RSA {
         try{
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING");
             cipher.init(Cipher.ENCRYPT_MODE, this.publicKey);
-            byte[] data = message.getBytes(UTF_8);
+            byte[] data = b64Message.getBytes(UTF_8);
             int blocks = data.length / 117;
             int lastBlockSize = data.length % 117;
             byte[] encryptedData = new byte[(lastBlockSize == 0?blocks:blocks + 1) * 128];
