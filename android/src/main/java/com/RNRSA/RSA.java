@@ -127,7 +127,7 @@ public class RSA {
             if(lastBlockSize != 0) {
                 cipher.doFinal(data, blocks * 117, lastBlockSize, encryptedData, blocks * 128);
             }
-            return Base64.encodeToString(encryptedData, Base64.DEFAULT);
+            return Base64.encodeToString(encryptedData, Base64.DEFAULT).replaceAll("\\n", "").replaceAll("\\r", "");
         } catch (Exception var1){
             throw new RuntimeException("RSA加密异常", var1);
         }

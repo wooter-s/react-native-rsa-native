@@ -173,7 +173,11 @@ typedef void (^SecKeyPerformBlock)(SecKeyRef key);
     if (cipherBuffer) {
         free(cipherBuffer);
     }
-    return [encryptedData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+
+    NSString *temp = [[encryptedData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength] stringByReplacingOccurrencesOfString:@" " withString:@""];
+    temp = [temp stringByReplacingOccurrencesOfString:@"\r" withString:@""];
+    temp = [temp stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+    return temp;
 }
 
 - (NSData *)_encrypt:(NSData *)data {
