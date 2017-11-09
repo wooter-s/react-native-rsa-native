@@ -111,7 +111,14 @@ public class RSA {
 
     // Base64 input
     public String encrypt64(String b64Message) throws NoSuchAlgorithmException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
-        //byte[] data = Base64.decode(b64Message, Base64.DEFAULT);
+        byte[] data = Base64.decode(b64Message, Base64.DEFAULT);
+        byte[] cipherBytes = encrypt(data);
+        return Base64.encodeToString(cipherBytes, Base64.DEFAULT);
+    }
+
+    // UTF-8 input
+    public String encrypt(String message) throws NoSuchAlgorithmException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
+        //byte[] data = message.getBytes(UTF_8);
         //byte[] cipherBytes = encrypt(data);
         //return Base64.encodeToString(cipherBytes, Base64.DEFAULT);
         try{
@@ -131,13 +138,6 @@ public class RSA {
         } catch (Exception var1){
             throw new RuntimeException("RSA加密异常", var1);
         }
-    }
-
-    // UTF-8 input
-    public String encrypt(String message) throws NoSuchAlgorithmException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
-        byte[] data = message.getBytes(UTF_8);
-        byte[] cipherBytes = encrypt(data);
-        return Base64.encodeToString(cipherBytes, Base64.DEFAULT);
     }
 
     private byte[] decrypt(byte[] cipherBytes) throws NoSuchAlgorithmException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
